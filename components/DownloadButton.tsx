@@ -32,8 +32,8 @@ const DownloadButton = () => {
   };
 
   return (
-    <button onClick={handleOnClick}>
-      Download
+    <button onClick={handleOnClick} style={{ padding: "16px 32px" }}>
+      Download Image
     </button>
   );
 };

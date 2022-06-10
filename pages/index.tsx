@@ -1,7 +1,9 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import DesignModule from "../components/DesignModule";
 import styles from "../styles/Home.module.css";
+
+import DesignModule from "../components/DesignModule";
+import DownloadButton from "../components/DownloadButton";
 
 const Home: NextPage = () => {
   return (
@@ -12,6 +14,9 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      <nav style={{ padding: 32, backgroundColor: "lightgrey" }}>
+        <DownloadButton />
+      </nav>
       <main className={styles.main}>
         <DesignModule
           data={{
