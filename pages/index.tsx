@@ -21,7 +21,7 @@ const Home: NextPage = () => {
         <DesignModule
           data={{
             background: { color: "#09edb4" },
-            imageUrl: "https://new.poap.gg/images/wavy.png",
+            imageUrl: "https://poap-templates.s3.us-east-2.amazonaws.com/f3aa5f43-c58e-45da-9a88-dc1c6f37bda6.jpeg",
             frame: { color: "#83579e", width: 40 },
           }}
         />
