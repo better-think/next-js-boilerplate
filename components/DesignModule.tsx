@@ -4,10 +4,12 @@ import React, {
   useRef,
   useState,
   LegacyRef,
+  useMemo,
 } from "react";
 import { select } from "d3";
 import * as htmlToImage from "html-to-image";
 import { LazyLoadImage } from "react-lazy-load-image-component";
+import ImageToBase64 from "./ImageToBase64";
 
 const dataURLtoBlob = (dataURL: string) => {
   const binary = atob(dataURL.split(",")[1]);
@@ -23,12 +25,8 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
   const width = 500;
   const height = 500;
   const svgRef = useRef<SVGElement>(null);
-  // const imgRef = useRef(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  // const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageInBase64, setImageInBase64] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imageId = "image-01";
-  const svgCanvas = svgRef.current;
 
   // const getPathData = (r: number, w: number, h: number, d: number) => {
   //   const radius = r * 0.75;
@@ -58,17 +56,13 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
         btoa(unescape(encodeURIComponent(svgData)));
       img.setAttribute("src", base64Image);
 
-      console.log({
-        base64Image,
-      });
-
       img.onload = () => {
         ctxImg?.drawImage(img, 0, 0);
         const imgsrc = imgCanvas.toDataURL("image/png");
         const file = dataURLtoBlob(imgsrc);
         const size = file.size;
         const sizeKBImg = size / 1000;
-        console.log(`Image is ${sizeKBImg}kb`);
+        // console.log(`Image is ${sizeKBImg}kb`);
       };
     }
   }, [canvasRef, svgRef]);
@@ -85,6 +79,7 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
   }, [svgRef]);
 
   const addBackGround = useCallback(() => {
+    const svgCanvas = svgRef.current;
     if (svgCanvas) {
       const svg = select(svgCanvas)
         .data([null])
@@ -105,9 +100,10 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
         .attr("cy", height / 2)
         .style("fill", data.background.color);
     }
-  }, [svgCanvas, data])
+  }, [svgRef, data])
 
   const addCircleFrame = useCallback(() => {
+    const svgCanvas = svgRef.current;
     if (svgCanvas) {
       const svg = select(svgCanvas)
       svg
@@ -123,38 +119,27 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
         .style("stroke-width", data.frame.width)
         .style("stroke", data.frame.color);
     }
-  }, [svgRef, data])
+  }, [svgRef, data]);
 
-  useEffect(() => {
-    const refImage = document.querySelector(`#${imageId}`) as HTMLElement;
-
-    console.log("refImage: ", refImage);
-    console.log("imageLoaded: ", imageLoaded);
-    
-
-    if (imageLoaded && refImage) {
+  const drawImage = () => {
+    if (imageInBase64) {
       // Creation of the SVG
-      if (data.imageUrl) {
-        htmlToImage.toPng(refImage).then((base64Image) => {
-          initSVG();
-          const svg = select(svgCanvas)
-          addBackGround();
-          svg
-            .selectAll(".template-image")
-            .data([null])
-            .join("svg:image")
-            .attr("xlink:href", base64Image)
-            .attr("render-order", -1)
-            .attr("width", 500)
-            .attr("height", 500)
-            .attr("x", 0)
-            .attr("y", 0);
-          addCircleFrame();
-          convertSvg2Canvas();
-        });
-      }
+      const svgCanvas = svgRef.current;
+      const svg = select(svgCanvas)
+      addBackGround();
+      svg
+        .selectAll(".template-image")
+        .data([null])
+        .join("svg:image")
+        .attr("xlink:href", imageInBase64)
+        .attr("render-order", -1)
+        .attr("width", 500)
+        .attr("height", 500)
+        .attr("x", 0)
+        .attr("y", 0);
+      addCircleFrame();
+      convertSvg2Canvas();
     } else {
-      initSVG();
       addBackGround();
       addCircleFrame();
       convertSvg2Canvas();
@@ -163,32 +148,32 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
     return () => {
       initSVG();
     };
-  }, [data, svgRef, imageLoaded, initSVG, convertSvg2Canvas, addCircleFrame, addBackGround]);
+  };
+
+  useEffect(() => {
+    initSVG();
+    drawImage()
+  }, [imageInBase64])
 
   return (
-    <div className="canvas">
-      <svg className="svgArt" ref={svgRef as LegacyRef<SVGSVGElement>}></svg>
-      <canvas
-        // style={{ display: "none" }}
-        className="imageArt"
-        ref={canvasRef}
-      ></canvas>
-      {
-        data.imageUrl
-          ? <LazyLoadImage
-            src={data.imageUrl}
-            beforeLoad={() => {
-              setImageLoaded(false);
-            }}
-            afterLoad={() => {
-              setImageLoaded(true);
-            }}
-            crossOrigin="anonymous"
-            id={imageId}
-          />
-          : <></>
-      }
-    </div>
+    <>
+      <ImageToBase64 url={data.imageUrl} onChange={(e) => {
+        console.log({
+          image: e
+        });
+        setImageInBase64(e)
+      }} />
+      <div className="canvas">
+        <div>
+          <svg className="svgArt" ref={svgRef as LegacyRef<SVGSVGElement>}></svg>
+          <canvas
+            // style={{ display: "none" }}
+            className="imageArt"
+            ref={canvasRef}
+          ></canvas>
+        </div>
+      </div>
+    </>
   );
 };
 
