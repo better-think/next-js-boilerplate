@@ -25,14 +25,16 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
   const svgRef = useRef<SVGElement>(null);
   // const imgRef = useRef(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  // const [imageLoaded, setImageLoaded] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageId = "image-01";
+  const svgCanvas = svgRef.current;
 
-  const getPathData = (r: number, w: number, h: number, d: number) => {
-    const radius = r * 0.75;
-    const startX = w / 2 - radius;
-    return `m${startX},${h / 2} a${radius},${radius} 0 0 ${d} ${2 * radius},0`;
-  };
+  // const getPathData = (r: number, w: number, h: number, d: number) => {
+  //   const radius = r * 0.75;
+  //   const startX = w / 2 - radius;
+  //   return `m${startX},${h / 2} a${radius},${radius} 0 0 ${d} ${2 * radius},0`;
+  // };
 
   const convertSvg2Canvas = useCallback(() => {
     if (canvasRef.current && svgRef.current) {
@@ -82,66 +84,86 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
     }
   }, [svgRef]);
 
+  const addBackGround = useCallback(() => {
+    if (svgCanvas) {
+      const svg = select(svgCanvas)
+        .data([null])
+        .join("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("background", "transparent")
+        .style("border-radius", "50%");
+
+      svg
+        .selectAll(".background")
+        .data([null])
+        .join("circle")
+        .classed("background", true)
+        .attr("r", radius)
+        .attr("render-order", 1)
+        .attr("cx", width / 2)
+        .attr("cy", height / 2)
+        .style("fill", data.background.color);
+    }
+  }, [svgCanvas, data])
+
+  const addCircleFrame = useCallback(() => {
+    if (svgCanvas) {
+      const svg = select(svgCanvas)
+      svg
+        .selectAll(".frame")
+        .data([null])
+        .join("circle")
+        .classed("frame", true)
+        .attr("render-order", 3)
+        .attr("r", radius)
+        .attr("cx", width / 2)
+        .attr("cy", height / 2)
+        .style("fill", "transparent")
+        .style("stroke-width", data.frame.width)
+        .style("stroke", data.frame.color);
+    }
+  }, [svgRef, data])
+
   useEffect(() => {
-    const svgCanvas = svgRef.current;
     const refImage = document.querySelector(`#${imageId}`) as HTMLElement;
+
+    console.log("refImage: ", refImage);
+    console.log("imageLoaded: ", imageLoaded);
+    
 
     if (imageLoaded && refImage) {
       // Creation of the SVG
-      htmlToImage.toPng(refImage).then((base64Image) => {
-        initSVG();
-
-        const svg = select(svgCanvas)
-          .data([null])
-          .join("svg")
-          .attr("width", width)
-          .attr("height", height)
-          .style("background", "transparent")
-          .style("border-radius", "50%");
-
-        svg
-          .selectAll(".background")
-          .data([null])
-          .join("circle")
-          .classed("background", true)
-          .attr("r", radius)
-          .attr("render-order", 1)
-          .attr("cx", width / 2)
-          .attr("cy", height / 2)
-          .style("fill", data.background.color);
-
-        svg
-          .selectAll(".template-image")
-          .data([null])
-          .join("svg:image")
-          .attr("xlink:href", base64Image)
-          .attr("render-order", -1)
-          .attr("width", 500)
-          .attr("height", 500)
-          .attr("x", 0)
-          .attr("y", 0);
-
-        svg
-          .selectAll(".frame")
-          .data([null])
-          .join("circle")
-          .classed("frame", true)
-          .attr("render-order", 3)
-          .attr("r", radius)
-          .attr("cx", width / 2)
-          .attr("cy", height / 2)
-          .style("fill", "transparent")
-          .style("stroke-width", data.frame.width)
-          .style("stroke", data.frame.color);
-
-        convertSvg2Canvas();
-      });
+      if (data.imageUrl) {
+        htmlToImage.toPng(refImage).then((base64Image) => {
+          initSVG();
+          const svg = select(svgCanvas)
+          addBackGround();
+          svg
+            .selectAll(".template-image")
+            .data([null])
+            .join("svg:image")
+            .attr("xlink:href", base64Image)
+            .attr("render-order", -1)
+            .attr("width", 500)
+            .attr("height", 500)
+            .attr("x", 0)
+            .attr("y", 0);
+          addCircleFrame();
+          convertSvg2Canvas();
+        });
+      }
+    } else {
+      initSVG();
+      addBackGround();
+      addCircleFrame();
+      convertSvg2Canvas();
     }
 
     return () => {
       initSVG();
     };
-  }, [data, svgRef, imageLoaded]);
+  }, [data, svgRef, imageLoaded, initSVG, convertSvg2Canvas, addCircleFrame, addBackGround]);
 
   return (
     <div className="canvas">
@@ -151,14 +173,21 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
         className="imageArt"
         ref={canvasRef}
       ></canvas>
-      <LazyLoadImage
-        src={data.imageUrl}
-        afterLoad={() => {
-          setImageLoaded(true);
-        }}
-        crossOrigin="anonymous"
-        id={imageId}
-      />
+      {
+        data.imageUrl
+          ? <LazyLoadImage
+            src={data.imageUrl}
+            beforeLoad={() => {
+              setImageLoaded(false);
+            }}
+            afterLoad={() => {
+              setImageLoaded(true);
+            }}
+            crossOrigin="anonymous"
+            id={imageId}
+          />
+          : <></>
+      }
     </div>
   );
 };
