@@ -27,6 +27,7 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
   const svgRef = useRef<SVGElement>(null);
   const [imageInBase64, setImageInBase64] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [history, sethistory] = useState<any>({});
 
   // const getPathData = (r: number, w: number, h: number, d: number) => {
   //   const radius = r * 0.75;
@@ -152,17 +153,30 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
 
   useEffect(() => {
     initSVG();
-    drawImage()
-  }, [imageInBase64])
+    drawImage();
+  }, [imageInBase64, data.imageUrl, drawImage]);
+
+  const elt = useMemo(() => {
+    if (data.imageUrl && history[data.imageUrl]) {
+      setImageInBase64(history[data.imageUrl])
+      return <></>
+    } else {
+      return (
+        <ImageToBase64 url={data.imageUrl} onChange={(e) => {
+          setImageInBase64(e);
+          if(data.imageUrl) {
+            let _history = Object.assign(history, {});
+            _history[data.imageUrl] = e
+            sethistory(_history)
+          }
+        }} />
+      )
+    }
+  }, [data.imageUrl, history])
 
   return (
     <>
-      <ImageToBase64 url={data.imageUrl} onChange={(e) => {
-        console.log({
-          image: e
-        });
-        setImageInBase64(e)
-      }} />
+      {elt}
       <div className="canvas">
         <div>
           <svg className="svgArt" ref={svgRef as LegacyRef<SVGSVGElement>}></svg>
