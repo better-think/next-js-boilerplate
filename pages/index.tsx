@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
@@ -6,7 +7,22 @@ import DesignModule from "../components/DesignModule";
 import DownloadButton from "../components/DownloadButton";
 
 const Home: NextPage = () => {
-  console.log('Booooom =>>>XXXXXX');
+  const [imageUrl, setImageUrl] = useState("");
+  const [frameColor, setFrameColor] = useState("red");
+
+  const toggleImage = () => {
+    setImageUrl(
+      imageUrl ===
+        "https://poap-templates.s3.us-east-2.amazonaws.com/f3aa5f43-c58e-45da-9a88-dc1c6f37bda6.jpeg"
+        ? ""
+        : "https://poap-templates.s3.us-east-2.amazonaws.com/f3aa5f43-c58e-45da-9a88-dc1c6f37bda6.jpeg"
+    );
+  };
+
+  const toggleFrameColor = () => {
+    setFrameColor(frameColor === "red" ? "green" : "red");
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -17,13 +33,15 @@ const Home: NextPage = () => {
 
       <nav style={{ padding: 32, backgroundColor: "lightgrey" }}>
         <DownloadButton />
+        <button onClick={() => toggleImage()}>Toggle Image</button>
+        <button onClick={() => toggleFrameColor()}>Toggle Frame Color</button>
       </nav>
       <main className={styles.main}>
         <DesignModule
           data={{
             background: { color: "#09edb4" },
-            imageUrl: "https://poap-templates.s3.us-east-2.amazonaws.com/f3aa5f43-c58e-45da-9a88-dc1c6f37bda6.jpeg",
-            frame: { color: "#83579e", width: 40 },
+            imageUrl,
+            frame: { color: frameColor, width: 40 },
           }}
         />
       </main>
