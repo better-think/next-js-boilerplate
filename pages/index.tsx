@@ -11,12 +11,12 @@ const Home: NextPage = () => {
   const [frameColor, setFrameColor] = useState("red");
 
   const toggleImage = () => {
-    setImageUrl(
-      imageUrl ===
-        "https://poap-templates.s3.us-east-2.amazonaws.com/f3aa5f43-c58e-45da-9a88-dc1c6f37bda6.jpeg"
-        ? ""
-        : "https://poap-templates.s3.us-east-2.amazonaws.com/f3aa5f43-c58e-45da-9a88-dc1c6f37bda6.jpeg"
-    );
+    // setImageUrl(
+    //   imageUrl ===
+    //     "https://poap-templates.s3.us-east-2.amazonaws.com/f3aa5f43-c58e-45da-9a88-dc1c6f37bda6.jpeg"
+    //     ? "https://poap-templates.s3.us-east-2.amazonaws.com/a2d7cd73-8871-4dd3-9e49-dea4f577bb16.png"
+    //     : "https://poap-templates.s3.us-east-2.amazonaws.com/f3aa5f43-c58e-45da-9a88-dc1c6f37bda6.jpeg"
+    // );
   };
 
   const toggleFrameColor = () => {
@@ -37,6 +37,7 @@ const Home: NextPage = () => {
         <button onClick={() => toggleFrameColor()}>Toggle Frame Color</button>
       </nav>
       <main className={styles.main}>
+        <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
         <DesignModule
           data={{
             background: { color: "#09edb4" },
