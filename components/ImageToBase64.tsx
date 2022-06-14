@@ -36,9 +36,19 @@ function ImageToBase64({ url, onChange }: Props) {
 
     useEffect(() => {
         setShowImage(true)
-        setImageLoaded(false)
         setBase64Image('')
-    }, [url])
+    }, [url]);
+
+    const imageElt = <LazyLoadImage
+        src={url}
+        beforeLoad={() => {
+            setImageLoaded(false);
+        }}
+        afterLoad={() => {
+            setImageLoaded(true);
+        }}
+        crossOrigin="anonymous"
+    />
 
     return (
         <>
@@ -48,16 +58,7 @@ function ImageToBase64({ url, onChange }: Props) {
                     width: '100%',
                     display: showImage ? 'block' : 'none'
                 }}>
-                    <LazyLoadImage
-                        src={url}
-                        beforeLoad={() => {
-                            setImageLoaded(false);
-                        }}
-                        afterLoad={() => {
-                            setImageLoaded(true);
-                        }}
-                        crossOrigin="anonymous"
-                    />
+                    {imageElt}
                 </div>
                 : null
             }

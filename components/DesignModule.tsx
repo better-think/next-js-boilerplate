@@ -7,8 +7,6 @@ import React, {
   useMemo,
 } from "react";
 import { select } from "d3";
-import * as htmlToImage from "html-to-image";
-import { LazyLoadImage } from "react-lazy-load-image-component";
 import ImageToBase64 from "./ImageToBase64";
 
 const dataURLtoBlob = (dataURL: string) => {
@@ -160,7 +158,7 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
     if (data.imageUrl && history[data.imageUrl]) {
       setImageInBase64(history[data.imageUrl])
       return <></>
-    } else {
+    } else if(data.imageUrl) {
       return (
         <ImageToBase64 url={data.imageUrl} onChange={(e) => {
           setImageInBase64(e);
@@ -171,6 +169,8 @@ const DesignModule: React.FC<{ data: any }> = ({ data }) => {
           }
         }} />
       )
+    } else {
+      setImageInBase64('')
     }
   }, [data.imageUrl, history])
 
